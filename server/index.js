@@ -3,13 +3,17 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import router from "./routes.js";
+import {router as adminRouter} from "./adminroutes.js";
 
 // App uses import
 import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-
+import multer, { memoryStorage } from "multer";
+const upload = multer({
+    storage: multer.memoryStorage()
+})
 //Core Configuration
 const app = express()
 dotenv.config();
@@ -24,7 +28,8 @@ app.use(morgan("common"));
 
 //Connection with routes and static
 app.set("/static", express.static("./static"));
-app.use("/", router);
+app.use("/API", router);
+app.use("/admin", adminRouter);
 
 //DB AND SERVER CONNECTION
 mongoose.connect(process.env.MONGO_URI, {
