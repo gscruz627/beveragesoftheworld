@@ -4,9 +4,10 @@ import {
     beverageChangePriceController,
     beveragesChangeAmountController
 } from "./controllers/admin.js";
+import {verifyToken, isAdmin} from "./middleware.js";
 const router = express.Router();
 
-router.post("/beverages/new", newBeveragesController);
-router.patch("/beverages/changeprice", beverageChangePriceController);
-router.patch("/beverages/changeAmount", beveragesChangeAmountController);
+router.patch("/beverages/changeprice", verifyToken, isAdmin, beverageChangePriceController);
+router.patch("/beverages/changeAmount", verifyToken, isAdmin, beveragesChangeAmountController);
+
 export default router;

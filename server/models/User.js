@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     },
     cart: {
         type: Map,
-        required: true
+        default: [],
     }
 }, {
     timestamps: true,
