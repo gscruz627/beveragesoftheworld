@@ -1,4 +1,7 @@
 node_modules/
+client/package.json
+client/node_modules/
+client/package-lock.json
 package-lock.json
 package.json
 .env

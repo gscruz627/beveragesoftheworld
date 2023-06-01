@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import router from "./routes.js";
 import {router as adminRouter} from "./adminroutes.js";
-import jwt from "jsonwebtoken";
 import {v2 as cloudinary} from "cloudinary";
 import {isAdmin, verifyToken} from "./middleware.js";
 

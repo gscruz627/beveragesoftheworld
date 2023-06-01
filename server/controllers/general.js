@@ -59,7 +59,9 @@ export const registerController = async (req, res) => {
         password: password,
       });
       const savedUser = await newUser.save();
-      res.status(201).json(savedUser);
+      const token = jwt.sign({id: savedUser._id}, process.env.JWT_SECRET);
+
+      res.status(201).json({user: savedUser, token: token});
     } else {
       res.status(400).json({ message: "Username already taken" });
     }

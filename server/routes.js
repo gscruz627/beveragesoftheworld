@@ -1,10 +1,12 @@
 import express from "express";
 import {
     allBeveragesController,
-    getBeverageController
+    getBeverageController,
+    loginController,
+    registerController
 } from "./controllers/general.js";
 import {
-    getUserController
+    getUserController,
 } from "./conrollers/auth.js";
 
 const router = express.Router();
@@ -16,7 +18,8 @@ router.get("/user/:id", getUserController);
 
 router.patch("/cart/add/:id", addToCartBeverageController);
 router.patch("/cart/remove/:id", removeFromCartBeverageController);
-router.post("/createUser", createUserController);
+router.post("/register", registerController);
+router.post("/login", loginController);
 
 
 export default router;
