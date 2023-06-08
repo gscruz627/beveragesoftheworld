@@ -1,6 +1,7 @@
-import Beverage from "../models/Beverage";
-import User from "../models/User";
+import Beverage from "../models/Beverage.js";
+import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import jwt  from "jsonwebtoken";
 
 export const beveragesController = async (req, res) => {
   try {
@@ -20,13 +21,51 @@ export const getBeverageController = async (req, res) => {
     res.status(500).json({ error: "Error on getBeverage: " + err });
   }
 };
-
+export const getBeveragesController = async (req, res) => {
+  try{
+    const { filter } = req.query;
+    console.log(filter);
+    switch(filter){
+      case "all":
+        const beverages = await Beverage.find();
+        res.status(200).json(beverages);
+        break;
+    }
+  } catch(err) {
+    res.status(500).json({erro: "Error on getBeverages: " + err})
+  }
+}
 export const addToCartBeverageController = async (req, res) => {
   try {
-    const { beverageId, userId, amount } = req.body;
-    const user = await User.findById(userId);
-    const beverage = await Beverage.findById(beverageId);
-    user.cart.set(beverage._id, amount);
+    const { id } = req.params;
+    const { userId, amount } = req.body;
+    let user = await User.findOneAndUpdate(
+      { _id: userId, 'cart.id': id },
+      { $inc: { 'cart.$.amount': amount } },
+      { new: true }
+    );
+    
+    if (user) {
+      console.log(user.cart);
+    } else {
+      const beverage = await Beverage.findById(id);
+      user = await User.findByIdAndUpdate(
+        userId,
+        {
+          $push: {
+            cart: {
+              id: id,
+              name: beverage.name,
+              amount: amount,
+              picture: beverage.picture,
+            },
+          },
+        },
+        { new: true }
+      );
+    }
+    
+    console.log(user.cart);
     const savedUser = await user.save();
     res.status(200).json(savedUser);
   } catch (err) {
@@ -36,9 +75,10 @@ export const addToCartBeverageController = async (req, res) => {
 
 export const removeFromCartBeverageController = async (req, res) => {
   try {
-    const { beverageId, userId, amount } = req.body;
+    const { id } = req.query;
+    const { userId, amount } = req.body;
     const user = await User.findById(userId);
-    const beverage = await Beverage.findById(beverageId);
+    const beverage = await Beverage.findById(id);
     user.cart.delete(beverage._id);
     const savedUser = await user.save();
     res.status(200).json(savedUser);
@@ -50,13 +90,13 @@ export const removeFromCartBeverageController = async (req, res) => {
 export const registerController = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const verifyUser = await User.find({ username: username });
+    const verifyUser = await User.findOne({ username: username });
     if (!verifyUser) {
-      const salt = bcrypt.genSalt();
+      const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
       const newUser = new User({
         username: username,
-        password: password,
+        password: hashedPassword,
       });
       const savedUser = await newUser.save();
       const token = jwt.sign({id: savedUser._id}, process.env.JWT_SECRET);
@@ -73,7 +113,7 @@ export const registerController = async (req, res) => {
 export const loginController = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.find({ username: username });
+    const user = await User.findOne({ username: username });
     if (user) {
       const isPasswordTrue = await bcrypt.compare(password, user.password);
       if(isPasswordTrue){
@@ -90,3 +130,12 @@ export const loginController = async (req, res) => {
     res.status(500).json({ err: "Error on login: " + err });
   }
 };
+
+export const getUserController = async (req, res) => {
+  try{
+    const { id } = req.params;
+    const user = await User.findById(id);
+  } catch(err){
+    res.satus(500).json({error: "Error on getUser: " + err})
+  }
+}

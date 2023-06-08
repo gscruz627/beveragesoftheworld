@@ -1,13 +1,10 @@
 import express from "express";
 import {
-    newBeveragesController,
     beverageChangePriceController,
-    beveragesChangeAmountController
+    beverageChangeAmountController
 } from "./controllers/admin.js";
 import {verifyToken, isAdmin} from "./middleware.js";
-const router = express.Router();
+export const router = express.Router();
 
 router.patch("/beverages/changeprice", verifyToken, isAdmin, beverageChangePriceController);
-router.patch("/beverages/changeAmount", verifyToken, isAdmin, beveragesChangeAmountController);
-
-export default router;
+router.patch("/beverages/changeAmount", verifyToken, isAdmin, beverageChangeAmountController);

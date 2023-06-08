@@ -1,21 +1,22 @@
-import { cloudinaryUpload } from "..index.js";
-import Beverage from "../models/Beverage";
+import { cloudinaryUpload } from "../index.js";
+import Beverage from "../models/Beverage.js";
 export const newBeverageController = async (req, res) => {
   try {
-    const { name, price, amount, country } = req.body;
+    console.log(name, price, country)
     const beverage = new Beverage({
       name: name,
       cost: price,
-      stock: amount,
-      image: "",
+      country: country,
+      picture: "",
     });
 
     let filename = "";
     cloudinaryUpload(req.file.buffer).then(async (secure_url) => {
-      beverage.image = secure_url;
-      const savedBeverage = await beverage.save();
+      beverage.picture = secure_url;
+      await beverage.save();
     });
-    res.status(201).json(beverage);
+    const beverages = await Beverage.find();
+    res.status(201).json(beverages);
   } catch (err) {
     res.status(500).json({ error: "Error on new Beverage: " + err });
   }

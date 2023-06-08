@@ -23,6 +23,7 @@ const app = express()
 dotenv.config();
 
 //App uses Configuration;
+app.use(express.json())
 app.use(cors());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({policy: "cross-origin"}));
@@ -52,7 +53,7 @@ app.set("/static", express.static("./static"));
 app.use("/API", router);
 app.use("/admin", adminRouter);
 
-app.post("/admin/beverages/new", verifyToken, checkAuth, upload("file"), newBeverageController);
+app.post("/admin/beverages/new", verifyToken, upload.single("file"), isAdmin, newBeverageController);
 //DB AND SERVER CONNECTION
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,

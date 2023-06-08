@@ -6,7 +6,7 @@ export default createStore({
     return {
       user: null,
       token: null,
-      items: null,
+      beverages: [],
     }
   },
   getters: {
@@ -16,34 +16,45 @@ export default createStore({
       state.user = payload.user;
       state.token = payload.token;
     },
-    setItems(state, payload) {
-      state.items = payload.items;
+    setBeverages(state, payload) {
+      state.beverages = payload.beverages;
     },
-    setItem(state, payload) {
-      items.map( (item) => {
-        if(item._id === payload.item._id){
-          return payload.item;
+    setBeverage(state, payload) {
+      console.log(payload);
+      state.beverages.map( (beverage) => {
+        if(beverage._id === payload.beverage._id){
+          return payload.beverage;
         }
         else {
-          return item;
+          return beverage;
         }
       })
     }
   },
   actions: {
-    async registerUser(context, username, password) {
-      const userRequest = await fetch("http://localhost:8000/API/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({username: username, password: password})
-      });
-      const user = await userRequest.json();
-      context.commit(setUser, user.user);
-      context.commit(setToken, user.token);
+    logout(context) {
+      try {
+        context.commit("setUser" , {user: null, token: null});
+      } catch(err){ 
+        console.log("error on vuex, logout: " + err)
+      }
     },
-    async loginUser(context) {
+    async registerUser({ commit }, { username, password }) {
+      try {
+        const userRequest = await fetch("http://localhost:8000/API/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username: username, password: password })
+        });
+        const user = await userRequest.json();
+        commit("setUser", { user: user.user, token: user.token });
+      } catch (error) {
+        console.log("error: " + error);
+      }
+    },
+    async loginUser({commit}, { username, password }) {
       const userRequest = await fetch("http://localhost:8000/API/login", {
         method: "POST",
         headers: {
@@ -52,11 +63,62 @@ export default createStore({
         body: JSON.stringify({username: username, password: password})
       });
       const user = await userRequest.json();
-      context.commit(setUser, user.user);
-      context.commit(setToken, user.token);
-    }
+      if(user.user && user.token){
+        commit("setUser", { user: user.user, token: user.token});
+      } else {
+        console.log("failed");
+      }
+    },
+    async loadBeverages(context, {filter}){
+      const beveragesRequest = await fetch(`http://localhost:8000/API/beverages?filter=${filter}`, {
+      });
+      const beverages = await beveragesRequest.json();
+      context.commit("setBeverages", {beverages: beverages});
+    },
+    async addToCart(context, {amount, beverageId, userId, token}){
+      const updateRequest = await fetch(`http://localhost:8000/API/cart/add/${beverageId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify({amount: amount, userId: userId})
+      });
+      const update = await updateRequest.json();
+      context.commit("setUser", {user: update, token: token.value});
+    },
+    async removeFromCart(context, {amount, beverageId, userId, token}){
+      const updateRequest = await fetch(`http://localhost:8000/API/cart/remove/${beverageId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify({amount: amount, userId: userId})
+      });
+      const update = await updateRequest.json();
+      context.commit("setUser", {user: update, token: token.value});
+    },
+    async createBeverage(context, {amount, price, name, file, token, country, id}){
+      try{
+      const formData = new FormData();
+      formData.append("name", name.value);
+      formData.append("amount", amount.value);
+      formData.append("price", price.value);
+      formData.append("country", country.value);
+      formData.append("file", file);
+      formData.append("id", id)
+      const beveragesRequest = await fetch("http://localhost:8000/admin/beverages/new", {
+        method: "POST",
+        headers: {
+          Authorization: `VRFBER ${token}`
+        },
+        body: formData
+      });
+      const beverages = await beveragesRequest.json();
+      context.commit("setBeverages", beverages);
+    } catch(err){ console.log(err)}
+    },
   },
   modules: {
   },
   plugins: [createPersistedState()]
-})
+});

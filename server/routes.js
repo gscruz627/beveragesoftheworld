@@ -1,18 +1,18 @@
 import express from "express";
 import {
-    allBeveragesController,
     getBeverageController,
     loginController,
-    registerController
-} from "./controllers/general.js";
-import {
+    registerController,
     getUserController,
-} from "./conrollers/auth.js";
+    getBeveragesController,
+    addToCartBeverageController,
+    removeFromCartBeverageController
+} from "./controllers/general.js";
 
 const router = express.Router();
 
 // Routes to Controllers
-router.get("/beverages", allBeveragesController);
+router.get("/beverages", getBeveragesController);
 router.get("/beverage/:id", getBeverageController);
 router.get("/user/:id", getUserController);
 
