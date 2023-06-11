@@ -2,27 +2,16 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import VueMq from 'vue-mq'
 
-// Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
+// FA
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faUser, faCartShopping, faBars, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+library.add(faUser, faCartShopping, faBars, faRightFromBracket);
 
+//Setup
 const app = createApp(App);
-const vuetify = createVuetify({
-    components, directives,
-    icons: {
-        defaultSet: 'mdi',
-        aliases,
-        sets: {
-          mdi,
-        },
-      },
-})
 app.use(store)
 app.use(router)
-app.use(vuetify)
+app.component('font-awesome-icon', FontAwesomeIcon)
 app.mount('#app')
