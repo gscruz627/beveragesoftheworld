@@ -8,6 +8,10 @@ const BeverageSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    type: {
+        type: String,
+        required: true,
+    },
     picture: {
         type: String,
         required: true,

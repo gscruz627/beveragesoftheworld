@@ -1,20 +1,32 @@
 <template>
     <div class="centered">
-        <h1 :style="{'margin-bottom':'0.5rem'}">Register</h1>
+        <h1 :style="{ 'margin-bottom': '0.5rem' }">Register</h1>
         <hr>
         <form @submit="handleSubmit" class="form-build">
-            <label for="username" :style="{'margin-top':'1rem'}">Username: </label>
+            <div class="alert" v-if="authError === true">
+            Username already taken, try again
+            </div>
+            <div class="alert" v-if="isUsernameValid === false">
+            Username is not valid, try again
+            </div>
+            <label for="username" :style="{ 'margin-top': '1rem' }">Username: </label>
             <small>At least 3 characters</small>
             <input class="form-input" type="text" v-model="username" id="username" name="username" required>
-        
+
+            <div class="alert" v-if="isPasswordValid === false">
+            Password is not valid, try again
+            </div>
             <label for="password">Password: </label>
             <small>8+ characters, 1 Uppercase and 1 Number</small>
             <input class="form-input" type="password" v-model="password" id="password" name="password" required>
 
+            <div class="alert" v-if="doPasswordsMatch === false">
+            Passwords do not match, try again
+            </div>
             <label for="password2">Confirm your password: </label>
             <input class="form-input" type="password" v-model="password2" id="password2" name="password2" required>
 
-            <button type="submit">Register</button>
+            <button :style="{'width':'85%', 'margin': 'auto auto'}" type="submit" class="darkgrey">Register</button>
         </form>
     </div>
 </template>
@@ -37,37 +49,45 @@ export default ({
         const password2 = ref("");
         const doPasswordsMatch = ref(null);
 
+        const authError = ref(null);
+
         const handleSubmit = async (e) => {
             e.preventDefault();
 
-            if(username.value.length < 3){
+            if (username.value.length < 3) {
                 isUsernameValid.value = false;
                 return;
             } else {
                 isUsernameValid.value = true;
             }
 
-            if(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/.test(password.value)){
+            if (/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/.test(password.value)) {
                 isPasswordValid.value = true;
             } else {
                 isPasswordValid.value = false;
                 return;
             }
 
-            if(password.value === password2.value){
-                
+            if (password.value === password2.value) {
+                doPasswordsMatch.value = true;
+            } else {
+                doPasswordsMatch.value = false;
+                return;
             }
-            try {
-                await store.dispatch("registerUser", { username: username.value, password: password.value });
-                router.push("home");
-            } catch (err) {
-                console.log("There was an error with the request, this is a server error: " + err);
-            }
+            if (doPasswordsMatch && isPasswordValid && isUsernameValid) {
+                try {
+                    await store.dispatch("registerUser", { username: username.value, password: password.value });
+                    router.push("home");
+                } catch (err) {
+                    authError.value = true;
+                }
+            } else { alert("An error has occured"); return; }
         }
         return {
-            username, password, password2, handleSubmit
+            username, password, password2, handleSubmit,
+            isUsernameValid, isPasswordValid, doPasswordsMatch,
+            authError
         }
     }
-
 })
 </script>

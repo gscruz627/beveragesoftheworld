@@ -2,11 +2,12 @@ import { cloudinaryUpload } from "../index.js";
 import Beverage from "../models/Beverage.js";
 export const newBeverageController = async (req, res) => {
   try {
-    console.log(name, price, country)
+    const { name, price, country, type, picture} = req.body;
     const beverage = new Beverage({
       name: name,
       cost: price,
       country: country,
+      type: type,
       picture: "",
     });
 

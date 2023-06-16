@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import BeveragesByCountry from "../views/BeveragesByCountry.vue"
+//import BeveragesByType from "../views//BeveragesByType.vue"
 
 const routes = [
   {
@@ -31,6 +33,20 @@ const routes = [
     path: '/all',
     name: 'all',
     component: () => import('../views/AllBeverages.vue')
+  }, {
+    path: '/country/:name',
+    name: 'country',
+    component: () => BeveragesByCountry,
+    props: true
+  },{
+    path: '/type/:name',
+    name: 'type',
+    component: () => import ('../views/BeveragesByType.vue'),
+    props:true
+  }, {
+    path: '/terms',
+    name: 'terms',
+    component: () => import('../views/AboutView.vue')
   }
 ]
 

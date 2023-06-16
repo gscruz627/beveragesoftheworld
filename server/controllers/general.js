@@ -2,6 +2,7 @@ import Beverage from "../models/Beverage.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt  from "jsonwebtoken";
+import mongoose from "mongoose";
 
 export const beveragesController = async (req, res) => {
   try {
@@ -11,7 +12,16 @@ export const beveragesController = async (req, res) => {
     res.status(500).json({ error: "Error on beverages: " + err });
   }
 };
-
+export const countriesController = async (req, res) => {
+  try{
+    const countries = await Beverage.find().select("country").lean();
+    let countriesReturn = countries.map( (item) => {return item.country})
+    countriesReturn = [...new Set(countriesReturn)]
+    res.status(200).json(countriesReturn);
+  } catch(err) {
+    res.status(500).json({error: "Error on countries: " + err})
+  }
+}
 export const getBeverageController = async (req, res) => {
   try {
     const { id } = req.body;
@@ -23,14 +33,22 @@ export const getBeverageController = async (req, res) => {
 };
 export const getBeveragesController = async (req, res) => {
   try{
-    const { filter } = req.query;
-    console.log(filter);
+    const { filter, country, type } = req.query;
+    let beverages;
     switch(filter){
       case "all":
-        const beverages = await Beverage.find();
+        beverages = await Beverage.find();
         res.status(200).json(beverages);
         break;
-    }
+      case "country":
+        beverages = await Beverage.find({"country":country});
+        res.status(200).json(beverages);
+        break;
+      case "type":
+        beverages = await Beverage.find({"type":type});
+        res.status(200).json(beverages);
+        break;
+    };
   } catch(err) {
     res.status(500).json({erro: "Error on getBeverages: " + err})
   }
@@ -46,7 +64,7 @@ export const addToCartBeverageController = async (req, res) => {
     );
     
     if (user) {
-      console.log(user.cart);
+      
     } else {
       const beverage = await Beverage.findById(id);
       user = await User.findByIdAndUpdate(
@@ -58,14 +76,13 @@ export const addToCartBeverageController = async (req, res) => {
               name: beverage.name,
               amount: amount,
               picture: beverage.picture,
+              price: beverage.cost
             },
           },
         },
         { new: true }
       );
     }
-    
-    console.log(user.cart);
     const savedUser = await user.save();
     res.status(200).json(savedUser);
   } catch (err) {
@@ -75,18 +92,27 @@ export const addToCartBeverageController = async (req, res) => {
 
 export const removeFromCartBeverageController = async (req, res) => {
   try {
-    const { id } = req.query;
+    const { id } = req.params;
     const { userId, amount } = req.body;
     const user = await User.findById(userId);
-    const beverage = await Beverage.findById(id);
-    user.cart.delete(beverage._id);
+    user.cart = user.cart.filter( (item) => item.id !== id);
     const savedUser = await user.save();
     res.status(200).json(savedUser);
   } catch (err) {
     res.status(500).json({ error: "Error on removeFromCart: " + err });
   }
 };
-
+export const cleanCartController = async (req, res) => {
+  try{
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    user.cart = [];
+    const savedUser = await user.save();
+    res.status(200).json(savedUser);
+  } catch(err){
+    res.status(500).json({error: "Error on clean cart: " + err})
+  }
+}
 export const registerController = async (req, res) => {
   try {
     const { username, password } = req.body;
